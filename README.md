@@ -22,7 +22,7 @@ A Python utility that converts natural language questions about U.S. federal pro
 
 - **Natural Language Processing**: Converts conversational queries into structured, machine-readable data
 - **Filter Groups with OR/AND Logic**: Supports complex queries with multiple filter groups
-- **PSC/NAICS Code Intelligence**: Automatically identifies relevant Product Service Codes and NAICS codes with hierarchical levels
+- **PSC/NAICS Code Intelligence**: Automatically identifies relevant Product Service Codes and NAICS codes with top two hierarchical levels
 - **Set-Aside Detection**: Recognizes small business set-aside categories
 - **SQL-Compatible Operators**: Provides clear operators (`=`, `>`, `<`, `BETWEEN`, `LIKE`, `IN`) for downstream SQL generation
 - **Azure OpenAI Integration**: Uses structured outputs with JSON Schema for reliable extraction
