@@ -1,0 +1,51 @@
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment variables
+.env
+
+# Output directory
+output/
+Othes script/
+docs/
+.claude/
+
+# Markdown files (except README.md)
+*.md
+!README.md
+
+
+
+
+
+# Old individual output files (deprecated)
+example_*_output.json
+extraction_output.json
+schema_output.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
