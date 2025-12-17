@@ -56,8 +56,9 @@ Use this date for all relative date calculations (e.g., "last 5 years", "past tw
 
 ## Field Definitions
 
-### Date Field:
-- **date**: the date associated with the award, solicitation, requisition, assistance agreement, or funding opportunity
+### Date Fields:
+- **StartDate**: when the work/contract/procurement began (Period of Performance Start)
+- **EndDate**: when the work/contract/procurement ended (Period of Performance End)
 
 ### Amount Fields:
 - **funded_amount**: the amount of money obligated to pay the vendor/recipient for work being done
@@ -592,33 +593,57 @@ Z - Maintenance, Repair or Alteration of Real Property
 99 - Miscellaneous
 ```
 
-## Date Extraction Rules
+## Date Extraction Rules - StartDate and EndDate
 
-IMPORTANT: Use SQL operators (=, <, >, <=, >=, BETWEEN) and calculate actual dates based on today's date ({today_str}).
+IMPORTANT: Extract dates into TWO separate fields: **StartDate** and **EndDate**
+- **StartDate**: Period of Performance Start (when work/contract began)
+- **EndDate**: Period of Performance End (when work/contract ended/ends)
+
+Use SQL operators (=, <, >, <=, >=, BETWEEN) and calculate actual dates based on today's date ({today_str}).
 
 **RECENT DATE DEFINITION**: "Recent" means the last {recent_days} days (from {recent_date} to {today_str}).
 
-1. **"Recent" keyword**: When user says "recent", "recently", or "latest", use the configured recent period AND include the recent_days value
-   - "recent contracts" → date = {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}}
-   - "recently awarded" → date = {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}}
-   - "latest solicitations" → date = {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}}
+### When to use each field:
 
-   **IMPORTANT**: The "recent_days" field should ONLY be included when the query uses words like "recent", "recently", or "latest". Do NOT include it for other date queries.
+1. **Explicit START date keywords**: "starting", "began", "start", "commenced", "initiated", "begins"
+   - "contracts starting in FY 2022" → StartDate only, EndDate = null
+   - "contracts starting after January 1, 2024" → StartDate = {{"operator": ">", "value": "2024-01-01"}}, EndDate = null
 
-2. **Fiscal year references**: Convert to date ranges using BETWEEN (no recent_days)
-   - "FY 2025" → date = {{"operator": "BETWEEN", "start_date": "2024-10-01", "end_date": "2025-09-30"}}
-   - "in 2025" → date = {{"operator": "BETWEEN", "start_date": "2025-01-01", "end_date": "2025-12-31"}}
+2. **Explicit END date keywords**: "ending", "ended", "end", "completed", "finished", "concluded", "expires"
+   - "contracts ending in FY 2024" → EndDate only, StartDate = null
+   - "contracts ending before December 2025" → StartDate = null, EndDate = {{"operator": "<", "value": "2025-12-31"}}
 
-3. **Relative dates**: Calculate actual dates from today ({today_str}) (no recent_days)
-   - "within the last 5 years" → date = {{"operator": "BETWEEN", "start_date": "{five_years_ago}", "end_date": "{today_str}"}}
-   - "within the last 2 years" → date = {{"operator": "BETWEEN", "start_date": "{two_years_ago}", "end_date": "{today_str}"}}
-   - "within the last year" → date = {{"operator": "BETWEEN", "start_date": "{one_year_ago}", "end_date": "{today_str}"}}
-   - "past two fiscal years" → date = {{"operator": "BETWEEN", "start_date": "{two_fy_ago_start}", "end_date": "{today_str}"}}
+3. **BOTH start and end specified**: Extract separately
+   - "work began in FY 2022 and ended in FY 2024" →
+     StartDate = {{"operator": "BETWEEN", "start_date": "2021-10-01", "end_date": "2022-09-30"}}
+     EndDate = {{"operator": "BETWEEN", "start_date": "2023-10-01", "end_date": "2024-09-30"}}
 
-4. **Specific dates**: Use exact format with appropriate SQL operator
-   - "after January 1, 2024" → date = {{"operator": ">", "value": "2024-01-01"}}
-   - "before December 31, 2024" → date = {{"operator": "<", "value": "2024-12-31"}}
-   - "on or after January 1, 2024" → date = {{"operator": ">=", "value": "2024-01-01"}}
+4. **AMBIGUOUS dates** (no clear start/end context): Populate BOTH fields with SAME values
+   Keywords: "in", "during", "for", "within", "after", "before", "recent", "FY XXXX" without start/end context
+   - "Contracts in FY 2024" → BOTH StartDate AND EndDate = {{"operator": "BETWEEN", "start_date": "2023-10-01", "end_date": "2024-09-30"}}
+   - "contracts after January 1, 2024" → BOTH StartDate AND EndDate = {{"operator": ">", "value": "2024-01-01"}}
+   - "within the last 5 years" → BOTH fields = {{"operator": "BETWEEN", "start_date": "{five_years_ago}", "end_date": "{today_str}"}}
+
+5. **"Recent" keyword**: When user says "recent", "recently", or "latest", populate BOTH fields with recent_days
+   - "recent contracts" → BOTH StartDate AND EndDate = {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}}
+
+   **IMPORTANT**: The "recent_days" field should ONLY be included when the query uses words like "recent", "recently", or "latest".
+
+### Date Format Examples:
+
+**Fiscal year references**: (Federal FY starts Oct 1)
+- "FY 2025" → {{"operator": "BETWEEN", "start_date": "2024-10-01", "end_date": "2025-09-30"}}
+- "in 2025" (calendar year) → {{"operator": "BETWEEN", "start_date": "2025-01-01", "end_date": "2025-12-31"}}
+
+**Relative dates**: Calculate from today ({today_str})
+- "within the last 5 years" → {{"operator": "BETWEEN", "start_date": "{five_years_ago}", "end_date": "{today_str}"}}
+- "within the last 2 years" → {{"operator": "BETWEEN", "start_date": "{two_years_ago}", "end_date": "{today_str}"}}
+- "past two fiscal years" → {{"operator": "BETWEEN", "start_date": "{two_fy_ago_start}", "end_date": "{today_str}"}}
+
+**Specific dates**:
+- "after January 1, 2024" → {{"operator": ">", "value": "2024-01-01"}}
+- "before December 31, 2024" → {{"operator": "<", "value": "2024-12-31"}}
+- "on or after January 1, 2024" → {{"operator": ">=", "value": "2024-01-01"}}
 
 ## Amount Extraction Rules
 
@@ -683,7 +708,8 @@ ALL queries must use the filter_groups structure to organize conditions:
 
 ### Filter Group Fields:
 Each filter group can contain:
-- date: DateFilter
+- StartDate: DateFilter (Period of Performance Start - when work/contract began)
+- EndDate: DateFilter (Period of Performance End - when work/contract ended)
 - funded_amount: AmountFilter
 - total_amount: AmountFilter
 - vendor: TextFilter
@@ -707,33 +733,39 @@ Each filter group can contain:
 - filter_groups: [
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
-      "date": {{"operator": "BETWEEN", "start_date": "2025-01-01", "end_date": "2025-12-31"}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2025-01-01", "end_date": "2025-12-31"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2025-01-01", "end_date": "2025-12-31"}},
       "product_service_code": {{"psc_code": null, "description": "application support, upgrades, and software lifecycle services", "level1": {{"code": "D", "description": "IT and Telecom Services"}}, "level2": {{"code": "DA", "description": "Various IT Services"}}}},
       "industry_code": {{"naics_code": null, "description": "application support, upgrades, and software lifecycle services", "level1": {{"code": "54", "description": "Professional, Scientific, and Technical Services"}}, "level2": {{"code": "541", "description": "Professional, Scientific, and Technical Services"}}}}
     }}
   ]
 - group_operator_between_groups: null
+- Note: "in 2025" is ambiguous (no clear start/end context), so BOTH StartDate and EndDate have the same values
 
 **Example 2**: "Show me all delivery orders awards for facility maintenance services in the past two fiscal years"
 - filter_groups: [
     {{
       "subdoctype": {{"operator": "=", "value": "Delivery/Task Order"}},
-      "date": {{"operator": "BETWEEN", "start_date": "{two_fy_ago_start}", "end_date": "{today_str}"}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "{two_fy_ago_start}", "end_date": "{today_str}"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "{two_fy_ago_start}", "end_date": "{today_str}"}},
       "product_service_code": {{"psc_code": null, "description": "facility maintenance services", "level1": {{"code": "Z", "description": "Maintenance, Repair or Alteration of Real Property"}}, "level2": {{"code": "Z1", "description": "Buildings and Structures"}}}},
       "industry_code": {{"naics_code": null, "description": "facility maintenance services", "level1": {{"code": "56", "description": "Administrative and Support and Waste Management and Remediation Services"}}, "level2": {{"code": "561", "description": "Administrative and Support Services"}}}}
     }}
   ]
 - group_operator_between_groups: null
+- Note: "in the past two fiscal years" is ambiguous, so BOTH fields have the same values
 
 **Example 3**: "awards and solicitations PSC code 1222 within the last five years"
 - filter_groups: [
     {{
       "subdoctype": {{"operator": "IN", "values": ["Contract", "Delivery/Task Order", "TDD", "Work Assignment", "Other Transaction", "BPA", "BPA call", "IAA", "Purchase Order", "Purchase Card Order", "Multiple Award Setup", "OT Delivery/Task Order", "solicitations"]}},
-      "date": {{"operator": "BETWEEN", "start_date": "{five_years_ago}", "end_date": "{today_str}"}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "{five_years_ago}", "end_date": "{today_str}"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "{five_years_ago}", "end_date": "{today_str}"}},
       "product_service_code": {{"psc_code": ["1222"], "description": null, "level1": null, "level2": null}}
     }}
   ]
 - group_operator_between_groups: null
+- Note: "within the last five years" is ambiguous, so BOTH fields have the same values
 
 **Example 4**: "IT consulting services with NAICS 541512"
 - filter_groups: [
@@ -749,32 +781,36 @@ Each filter group can contain:
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
       "total_amount": {{"operator": ">", "value": 1000000}},
-      "date": {{"operator": ">", "value": "2024-01-01"}}
+      "StartDate": {{"operator": ">", "value": "2024-01-01"}},
+      "EndDate": {{"operator": ">", "value": "2024-01-01"}}
     }}
   ]
 - group_operator_between_groups: null
+- Note: "after January 1, 2024" is ambiguous (no clear start/end context), so BOTH fields have the same values
 
 **Example 6**: "Recent contracts for IT services"
 - filter_groups: [
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
-      "date": {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}},
       "product_service_code": {{"psc_code": null, "description": "IT services", "level1": {{"code": "D", "description": "IT and Telecom Services"}}, "level2": {{"code": "DA", "description": "Various IT Services"}}}},
       "industry_code": {{"naics_code": null, "description": "IT services", "level1": {{"code": "54", "description": "Professional, Scientific, and Technical Services"}}, "level2": {{"code": "541", "description": "Professional, Scientific, and Technical Services"}}}}
     }}
   ]
 - group_operator_between_groups: null
-- Note: recent_days is included because the query uses "Recent"
+- Note: "Recent" is ambiguous, so BOTH fields have the same values. recent_days is included because the query uses "Recent"
 
 **Example 7**: "Show me the latest solicitations"
 - filter_groups: [
     {{
       "subdoctype": {{"operator": "=", "value": "solicitations"}},
-      "date": {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}}
+      "StartDate": {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "{recent_date}", "end_date": "{today_str}", "recent_days": {recent_days}}}
     }}
   ]
 - group_operator_between_groups: null
-- Note: recent_days is included because the query uses "latest"
+- Note: "latest" is ambiguous, so BOTH fields have the same values. recent_days is included because the query uses "latest"
 
 **Example 8**: "Nursing services contracts"
 - filter_groups: [
@@ -802,37 +838,41 @@ Each filter group can contain:
       "subdoctype": {{"operator": "=", "value": "Contract"}},
       "total_amount": {{"operator": ">", "value": 10000000}},
       "vendor": {{"operator": "LIKE", "value": "%Lockheed%"}},
-      "date": {{"operator": "BETWEEN", "start_date": "2022-10-01", "end_date": "2023-09-30"}}
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2022-10-01", "end_date": "2023-09-30"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2022-10-01", "end_date": "2023-09-30"}}
     }},
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
       "total_amount": {{"operator": "<", "value": 5000000}},
       "vendor": {{"operator": "LIKE", "value": "%Lockheed%"}},
-      "date": {{"operator": "BETWEEN", "start_date": "2022-10-01", "end_date": "2023-09-30"}}
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2022-10-01", "end_date": "2023-09-30"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2022-10-01", "end_date": "2023-09-30"}}
     }}
   ]
 - group_operator_between_groups: "OR"
-- Note: This is an OR query - two separate groups with all conditions duplicated
+- Note: This is an OR query. "in FY 2023" is ambiguous, so BOTH StartDate and EndDate have the same values in each group
 
 **Example 11 (OR Query)**: "IT services contracts to Boeing OR Lockheed in 2024"
 - filter_groups: [
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
       "vendor": {{"operator": "LIKE", "value": "%Boeing%"}},
-      "date": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
       "product_service_code": {{"psc_code": null, "description": "IT services", "level1": {{"code": "D", "description": "IT and Telecom Services"}}, "level2": {{"code": "DA", "description": "Various IT Services"}}}},
       "industry_code": {{"naics_code": null, "description": "IT services", "level1": {{"code": "54", "description": "Professional, Scientific, and Technical Services"}}, "level2": {{"code": "541", "description": "Professional, Scientific, and Technical Services"}}}}
     }},
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
       "vendor": {{"operator": "LIKE", "value": "%Lockheed%"}},
-      "date": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
       "product_service_code": {{"psc_code": null, "description": "IT services", "level1": {{"code": "D", "description": "IT and Telecom Services"}}, "level2": {{"code": "DA", "description": "Various IT Services"}}}},
       "industry_code": {{"naics_code": null, "description": "IT services", "level1": {{"code": "54", "description": "Professional, Scientific, and Technical Services"}}, "level2": {{"code": "541", "description": "Professional, Scientific, and Technical Services"}}}}
     }}
   ]
 - group_operator_between_groups: "OR"
-- Note: Uses multiple groups because vendor requires LIKE pattern matching (partial match), not exact match. PSC/NAICS info is duplicated in each group.
+- Note: Uses multiple groups because vendor requires LIKE pattern matching. "in 2024" is ambiguous, so BOTH StartDate and EndDate have the same values.
 
 **Example 12 (Multiple values - single group with IN/list)**: "Solicitations for PSC 7030 or 7050"
 - filter_groups: [
@@ -849,13 +889,49 @@ Each filter group can contain:
     {{
       "subdoctype": {{"operator": "=", "value": "Contract"}},
       "vendor": {{"operator": "IN", "values": ["Boeing", "Raytheon"]}},
-      "date": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}}
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2024-01-01", "end_date": "2024-12-31"}}
     }}
   ]
 - group_operator_between_groups: null
-- Note: When vendor names are exact matches, use IN operator in single group. Use multiple groups with LIKE only when partial/fuzzy matching is needed.
+- Note: When vendor names are exact matches, use IN operator in single group. "in 2024" is ambiguous, so BOTH StartDate and EndDate have the same values.
 
-Remember: Be precise, use SQL operators (=, >, <, >=, <=, BETWEEN, IN, LIKE), calculate actual dates, do NOT generate full PSC/NAICS codes - only extract what the user explicitly provides. When a description is provided, always identify the appropriate Level 1 and Level 2 categories from the lookup tables. Only include recent_days when the query uses "recent", "recently", or "latest". Always use filter_groups structure; set group_operator_between_groups to null for single group, "OR" for multiple groups with OR logic."""
+**Example 14 (Explicit Start and End dates)**: "Software development contracts starting in FY 2022 and ending in FY 2024"
+- filter_groups: [
+    {{
+      "subdoctype": {{"operator": "=", "value": "Contract"}},
+      "StartDate": {{"operator": "BETWEEN", "start_date": "2021-10-01", "end_date": "2022-09-30"}},
+      "EndDate": {{"operator": "BETWEEN", "start_date": "2023-10-01", "end_date": "2024-09-30"}},
+      "product_service_code": {{"psc_code": null, "description": "software development", "level1": {{"code": "D", "description": "IT and Telecom Services"}}, "level2": {{"code": "DA", "description": "Various IT Services"}}}},
+      "industry_code": {{"naics_code": null, "description": "software development", "level1": {{"code": "54", "description": "Professional, Scientific, and Technical Services"}}, "level2": {{"code": "541", "description": "Professional, Scientific, and Technical Services"}}}}
+    }}
+  ]
+- group_operator_between_groups: null
+- Note: "starting in FY 2022" → StartDate only. "ending in FY 2024" → EndDate only. Each has DIFFERENT date ranges.
+
+**Example 15 (Explicit Start date only)**: "Contracts starting after January 1, 2024"
+- filter_groups: [
+    {{
+      "subdoctype": {{"operator": "=", "value": "Contract"}},
+      "StartDate": {{"operator": ">", "value": "2024-01-01"}},
+      "EndDate": null
+    }}
+  ]
+- group_operator_between_groups: null
+- Note: "starting after" is explicit START keyword, so only StartDate is populated. EndDate is null.
+
+**Example 16 (Explicit End date only)**: "Contracts ending before December 2025"
+- filter_groups: [
+    {{
+      "subdoctype": {{"operator": "=", "value": "Contract"}},
+      "StartDate": null,
+      "EndDate": {{"operator": "<", "value": "2025-12-31"}}
+    }}
+  ]
+- group_operator_between_groups: null
+- Note: "ending before" is explicit END keyword, so only EndDate is populated. StartDate is null.
+
+Remember: Be precise, use SQL operators (=, >, <, >=, <=, BETWEEN, IN, LIKE), calculate actual dates, do NOT generate full PSC/NAICS codes - only extract what the user explicitly provides. When a description is provided, always identify the appropriate Level 1 and Level 2 categories from the lookup tables. Only include recent_days when the query uses "recent", "recently", or "latest". Always use filter_groups structure; set group_operator_between_groups to null for single group, "OR" for multiple groups with OR logic. For dates: use StartDate for period of performance start, EndDate for period of performance end. When ambiguous, populate BOTH with same values."""
 
 
 def build_user_prompt(query: str) -> str:

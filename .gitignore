@@ -49,3 +49,56 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# ===================
+# C# / .NET
+# ===================
+
+# Build results
+C#/**/bin/
+C#/**/obj/
+C#/**/out/
+C#/**/.vs/
+
+# NuGet
+C#/**/packages/
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+*.ilk
+*.log
+*.lib
+*.sbr
+*.scc
+
+# Visual Studio
+.vs/
+*.rsuser
+*.userprefs
+launchSettings.json
+
+# Rider
+.idea/
+
+# Test Results
+C#/**/TestResults/
+
+# C# output directory
+C#/**/output/
+
+# C# appsettings with secrets (keep template)
+C#/**/appsettings.json
+!C#/**/appsettings.example.json

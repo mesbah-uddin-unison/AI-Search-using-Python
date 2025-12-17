@@ -166,17 +166,29 @@ class ExtractionService:
         """
         group_dict = {}
 
-        # Date filter
-        if group.date:
-            date_filter = {
-                "operator": group.date.operator,
-                "value": group.date.value,
-                "start_date": group.date.start_date,
-                "end_date": group.date.end_date
+        # StartDate filter (Period of Performance Start)
+        if group.StartDate:
+            start_date_filter = {
+                "operator": group.StartDate.operator,
+                "value": group.StartDate.value,
+                "start_date": group.StartDate.start_date,
+                "end_date": group.StartDate.end_date
             }
-            if group.date.recent_days:
-                date_filter["recent_days"] = group.date.recent_days
-            group_dict["date"] = date_filter
+            if group.StartDate.recent_days:
+                start_date_filter["recent_days"] = group.StartDate.recent_days
+            group_dict["StartDate"] = start_date_filter
+
+        # EndDate filter (Period of Performance End)
+        if group.EndDate:
+            end_date_filter = {
+                "operator": group.EndDate.operator,
+                "value": group.EndDate.value,
+                "start_date": group.EndDate.start_date,
+                "end_date": group.EndDate.end_date
+            }
+            if group.EndDate.recent_days:
+                end_date_filter["recent_days"] = group.EndDate.recent_days
+            group_dict["EndDate"] = end_date_filter
 
         # Amount filters
         if group.funded_amount:
