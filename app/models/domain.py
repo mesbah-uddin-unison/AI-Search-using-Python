@@ -138,10 +138,14 @@ class FilterGroup(BaseModel):
     """A group of filters combined with AND logic internally."""
     model_config = ConfigDict(extra='forbid')
 
-    # Date field
-    date: Optional[DateFilter] = Field(
+    # Date fields - StartDate and EndDate for Period of Performance
+    StartDate: Optional[DateFilter] = Field(
         None,
-        description="Filter for the date associated with the procurement"
+        description="Filter for when the work/contract began (Period of Performance Start)"
+    )
+    EndDate: Optional[DateFilter] = Field(
+        None,
+        description="Filter for when the work/contract ended (Period of Performance End)"
     )
 
     # Amount fields

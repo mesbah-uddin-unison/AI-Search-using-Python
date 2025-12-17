@@ -108,6 +108,7 @@ if __name__ == "__main__":
     # ]
 
     test_queries = [
+        "Show me Army contracts that start before 2024 and end after June 2025"
         # "Show me Army contracts over $10M awarded to Lockheed in FY 2023 OR under $5M awarded to Lockheed in FY 2023",
         # "Contracts over $10M to Lockheed in FY23",
         # "IT services contracts in 2024",
@@ -119,35 +120,35 @@ if __name__ == "__main__":
         # # Complex OR with different service types
         # "IT services over $1M OR construction under $500K in FY24",
         # "Show me IT contracts over $1M in FY 2024",
-        "Pull solicitations that reference PSC 7030 or 7050 for software licenses",
+        # "Pull solicitations that reference PSC 7030 or 7050 for software licenses",
         
-        "Show me recent Army contracts over $10M awarded to Lockheed",
-        "Job Corps center contracts awarded to Historically Underutilized Businesses between 2020 and 2025",
-        "job Corps center contracts over $10M in 2020 or under $5M awarded to Lockheed in FY 2023 awarded to Historically Underutilized Businesses",
-        "job Corps center contracts over $10M in 2020 or over $5M awarded to Lockheed in FY 2023 awarded to Historically Underutilized Businesses",
-        "List aerospace NAICS awards above $5M obligated in FY23",
-        "Contracts awarded for application support, upgrades, or software lifecycle services in 2025",
-        "awards and solicitations for facilities and building upgrades and maintenance within the last five years",
-        "Show me all contract awards for facility maintenance services issued by [Agency Name] in the past two fiscal years, including total obligated amounts and vendors.",
-        "Retrieve assistance awards and grant agreements for small business, innovation or R&D programs funded by [Agency Name] between FY2022 and FY2024, including recipient names and funding amounts",
-        "SOOs for IT Infrastructure ",
-        "Show me awards that have option line items for [specific items or service]",
-        "Construction contracts for new construction or renovations ",
-        "I need a list of all awards that include clause 1234.",
-        "I need a list of all awards that were awarded this Fiscal year.",
-        "Past PWS used for nursing services",
-        "Please list all of the awards which have been made to Microsoft.",
-        "List all solicitation attachments or amendments related to construction or renovation projects under [Agency Name]",
-        "Summarize all awards and modifications issued to [Vendor Name or DUNS] across all [Agency Name] in the last 24 months, and show total obligations by month.",
-        "Acquisition Plans for IT Services over $10 million",
-        "available IT contracts for laptops with x dollar amount remaining",
-        "Contracts with a PoP ending in the next 90 days",
-        "Search for all awards released with total obligation over SAT crated in lat 90 days.",
-        "Please show me a list of all of the current awards related to facilities management.",
-        "Find awards tied to NAICS 541512 for cloud migration support",
-        "Pull solicitations that reference PSC 7030 or 7050 for software licenses",
-        "Show me funding opportunities mentioning NAICS 311111 in the last fiscal year",
-        "List requisitions for PSC for foundry machinery issued in FY24",
+        # "Show me recent Army contracts over $10M awarded to Lockheed",
+        # "Job Corps center contracts awarded to Historically Underutilized Businesses between 2020 and 2025",
+        # "job Corps center contracts over $10M in 2020 or under $5M awarded to Lockheed in FY 2023 awarded to Historically Underutilized Businesses",
+        # "job Corps center contracts over $10M in 2020 or over $5M awarded to Lockheed in FY 2023 awarded to Historically Underutilized Businesses",
+        # "List aerospace NAICS awards above $5M obligated in FY23",
+        # "Contracts awarded for application support, upgrades, or software lifecycle services in 2025",
+        # "awards and solicitations for facilities and building upgrades and maintenance within the last five years",
+        # "Show me all contract awards for facility maintenance services issued by [Agency Name] in the past two fiscal years, including total obligated amounts and vendors.",
+        # "Retrieve assistance awards and grant agreements for small business, innovation or R&D programs funded by [Agency Name] between FY2022 and FY2024, including recipient names and funding amounts",
+        # "SOOs for IT Infrastructure ",
+        # "Show me awards that have option line items for [specific items or service]",
+        # "Construction contracts for new construction or renovations ",
+        # "I need a list of all awards that include clause 1234.",
+        # "I need a list of all awards that were awarded this Fiscal year.",
+        # "Past PWS used for nursing services",
+        # "Please list all of the awards which have been made to Microsoft.",
+        # "List all solicitation attachments or amendments related to construction or renovation projects under [Agency Name]",
+        # "Summarize all awards and modifications issued to [Vendor Name or DUNS] across all [Agency Name] in the last 24 months, and show total obligations by month.",
+        # "Acquisition Plans for IT Services over $10 million",
+        # "available IT contracts for laptops with x dollar amount remaining",
+        # "Contracts with a PoP ending in the next 90 days",
+        # "Search for all awards released with total obligation over SAT crated in lat 90 days.",
+        # "Please show me a list of all of the current awards related to facilities management.",
+        # "Find awards tied to NAICS 541512 for cloud migration support",
+        # "Pull solicitations that reference PSC 7030 or 7050 for software licenses",
+        # "Show me funding opportunities mentioning NAICS 311111 in the last fiscal year",
+        # "List requisitions for PSC for foundry machinery issued in FY24",
     ]
 
     complex_queries = [
@@ -181,5 +182,5 @@ if __name__ == "__main__":
     # # Triple OR
     # "Small business contracts OR HUBZone solicitations OR SDVOSB awards for cybersecurity services in 2024",
 ]
-    # run_test(test_queries)
-    run_test(complex_queries)
+    run_test(test_queries)
+    #run_test(complex_queries)
